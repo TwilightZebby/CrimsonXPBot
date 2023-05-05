@@ -6,29 +6,29 @@
     "utf-8-validate": "^5.0.9",
     "zlib-sync": "^0.1.7"
   },
-  "name": "discordbottemplate",
-  "version": "3.1.0",
-  "description": "TwilightZebby's personal Discord Bot Template",
+  "name": "st1glevelsbot",
+  "description": "Private Levelling Bot for Dr1fterX's Community Discord Server.",
+  "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TwilightZebby/DiscordBotTemplate.git"
+    "url": "git+https://github.com/TwilightZebby/St1gLevelsBot.git"
   },
   "keywords": [
     "discord",
     "discord-bot",
     "discordjs",
-    "nodejs",
-    "discord-bot-template",
-    "template"
+    "levelling",
+    "xp",
+    "dr1fterx"
   ],
   "author": "TwilightZebby",
-  "license": "MIT",
+  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TwilightZebby/DiscordBotTemplate/issues"
+    "url": "https://github.com/TwilightZebby/St1gLevelsBot/issues"
   },
-  "homepage": "https://github.com/TwilightZebby/DiscordBotTemplate#readme"
+  "homepage": "https://github.com/TwilightZebby/St1gLevelsBot#readme"
 }
