@@ -1,5 +1,5 @@
 const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, EmbedBuilder } = require("discord.js");
-const { DiscordClient, Collections, CustomColors } = require("../../constants.js");
+const { DiscordClient, Collections, CustomColors, CrimsonUris } = require("../../constants.js");
 const { version, dependencies } = require('../../package.json');
 
 module.exports = {
@@ -67,7 +67,7 @@ module.exports = {
         let infoEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
         .setTitle(`${DiscordClient.user.username} Information`)
         .setDescription(`A highly customisable, and free, Levelling Bot for your Discord Servers.`)
-        .setThumbnail("https://i.imgur.com/JlAQDef.png")
+        .setThumbnail(CrimsonUris.CrimsonAvatar)
         .addFields({
             name: `Bot's Developer`,
             value: `TwilightZebby`,
@@ -82,7 +82,7 @@ module.exports = {
             inline: true
         }, {
             name: `Server Count`,
-            value: `Around ${DiscordClient.guilds.cache.size}`,
+            value: `${DiscordClient.guilds.cache.size}`,
             inline: true
         });
 

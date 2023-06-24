@@ -30,5 +30,11 @@ module.exports =
     CustomColors: {
         /** Main CrimsonXP Colour */
         CrimsonMain: "#DC143C"
+    },
+
+    /** URLs/URIs used */
+    CrimsonUris: {
+        /** Main Avatar/PFP for CrimsonXP */
+        CrimsonAvatar: "https://i.imgur.com/JlAQDef.png"
     }
 }
