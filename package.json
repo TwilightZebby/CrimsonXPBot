@@ -1,13 +1,16 @@
 {
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.41",
     "bufferutil": "^4.0.6",
-    "discord.js": "^14.10.2",
+    "discord.js": "^14.11.0",
     "erlpack": "github:discord/erlpack",
+    "mysql2": "^3.4.0",
+    "sequelize": "^6.32.1",
     "utf-8-validate": "^5.0.9",
     "zlib-sync": "^0.1.7"
   },
-  "name": "st1glevelsbot",
-  "description": "Private Levelling Bot for Dr1fterX's Community Discord Server.",
+  "name": "crimsonxpbot",
+  "description": "A highly customisable Levelling Bot for Discord.",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -15,20 +18,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TwilightZebby/St1gLevelsBot.git"
+    "url": "git+https://github.com/TwilightZebby/CrimsonXPBot.git"
   },
   "keywords": [
     "discord",
     "discord-bot",
     "discordjs",
     "levelling",
-    "xp",
-    "dr1fterx"
+    "levels",
+    "level",
+    "xp"
   ],
   "author": "TwilightZebby",
-  "license": "ISC",
+  "license": "SEE LICENSE AT https://github.com/TwilightZebby/license/blob/main/license.md",
   "bugs": {
-    "url": "https://github.com/TwilightZebby/St1gLevelsBot/issues"
+    "url": "https://github.com/TwilightZebby/CrimsonXPBot/issues"
   },
-  "homepage": "https://github.com/TwilightZebby/St1gLevelsBot#readme"
+  "homepage": "https://github.com/TwilightZebby/CrimsonXPBot#readme"
 }
