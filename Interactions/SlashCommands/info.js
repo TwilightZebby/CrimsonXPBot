@@ -1,12 +1,13 @@
 const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { DiscordClient, Collections, CustomColors, CrimsonUris } = require("../../constants.js");
+const { DiscordClient, CustomColors, CrimsonUris } = require("../../constants.js");
 const { version, dependencies } = require('../../package.json');
 
 // Button Links
 const InfoButtonLinks = new ActionRowBuilder().addComponents([
     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("GitHub").setURL("https://github.com/TwilightZebby/CrimsonXPBot"),
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Changelogs").setURL("https://github.com/TwilightZebby/CrimsonXPBot/releases")
-    //new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Support Server").setURL("#") // Placeholder for now
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Changelogs").setURL("https://github.com/TwilightZebby/CrimsonXPBot/releases"),
+    //new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Support Server").setURL("#"), // Placeholder for now
+    //new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Invite Bot").setURL("#") // Also a placeholder for now
 ]);
 
 module.exports = {
