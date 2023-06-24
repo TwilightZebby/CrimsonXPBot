@@ -1,5 +1,9 @@
 /node_modules
 config.js
 /.vscode
+deployCommands.js
 
-# /JsonFiles
+/Backgrounds/Card
+/Backgrounds/Broadcast
+
+/JsonFiles

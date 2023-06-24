@@ -1,0 +1,132 @@
+{
+    "beta": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "blurple_classic": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "burnt_orange": {
+        "colors": {
+            "username": "#ffdede",
+            "level": "#ffdede",
+            "xp": "#ffdede",
+            "rank": "#ffdede",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#004d4f"
+        }
+    },
+
+
+    "default": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "dragon": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "lipstick_death": {
+        "colors": {
+            "username": "#ffdede",
+            "level": "#ffdede",
+            "xp": "#ffdede",
+            "rank": "#ffdede",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#004d4f"
+        }
+    },
+
+
+    "paint_stains": {
+        "colors": {
+            "username": "#ffdede",
+            "level": "#ffdede",
+            "xp": "#ffdede",
+            "rank": "#ffdede",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "pastel": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "screech": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "simply_pink": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    },
+
+
+    "sunset": {
+        "colors": {
+            "username": "#000000",
+            "level": "#000000",
+            "xp": "#000000",
+            "rank": "#000000",
+            "progressBarFill": "#ab0202",
+            "progressBarEmpty": "#000000"
+        }
+    }
+}

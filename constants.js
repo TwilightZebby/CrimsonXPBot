@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits, Collection } = require("discord.js");
 
 module.exports =
 {
-    // Discord Client representing the Bot/App
+    /** Discord Client representing the Bot/App */
     DiscordClient: new Client({ 
         intents: [ 
             GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildIntegrations,
@@ -10,7 +10,7 @@ module.exports =
         ]
     }),
 
-    // Collections that are used in many locations
+    /** Collections that are used in many locations */
     Collections: {
         TextCommands: new Collection(),
         SlashCommands: new Collection(),
@@ -24,5 +24,11 @@ module.exports =
         ContextCooldowns: new Collection(),
         ButtonCooldowns: new Collection(),
         SelectCooldowns: new Collection()
+    },
+
+    /** Colours used, named as such to avoid conflicts with DJS's Colors */
+    CustomColors: {
+        /** Main CrimsonXP Colour */
+        CrimsonMain: "#DC143C"
     }
 }

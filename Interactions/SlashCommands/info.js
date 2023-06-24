@@ -1,20 +1,21 @@
-const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType } = require("discord.js");
-const { DiscordClient, Collections } = require("../../constants.js");
+const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, EmbedBuilder } = require("discord.js");
+const { DiscordClient, Collections, CustomColors } = require("../../constants.js");
+const { version, dependencies } = require('../../package.json');
 
 module.exports = {
     // Command's Name
     //     Use full lowercase
-    Name: "commandname",
+    Name: "info",
 
     // Command's Description
-    Description: `Description`,
+    Description: `See information about CrimsonXP, including links to my support server & changelogs!`,
 
     // Command's Category
     Category: "GENERAL",
 
     // Cooldown, in seconds
     //     Defaults to 3 seconds if missing
-    Cooldown: 3,
+    Cooldown: 10,
 
     // Cooldowns for specific subcommands and/or subcommand-groups
     //     IF SUBCOMMAND: name as "subcommandName"
@@ -25,7 +26,7 @@ module.exports = {
 
     // Scope of Command's usage
     //     One of the following: DM, GUILD, ALL
-    Scope: "GUILD",
+    Scope: "ALL",
     
     // Scope of specific Subcommands Usage
     //     One of the following: DM, GUILD, ALL
@@ -49,7 +50,7 @@ module.exports = {
         Data.name = this.Name;
         Data.description = this.Description;
         Data.type = ApplicationCommandType.ChatInput;
-        Data.dmPermission = false;
+        Data.dmPermission = true;
 
         return Data;
     },
@@ -62,7 +63,32 @@ module.exports = {
      */
     async execute(slashCommand)
     {
-        //.
+        // Create Embed
+        let infoEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
+        .setTitle(`${DiscordClient.user.username} Information`)
+        .setDescription(`A highly customisable, and free, Levelling Bot for your Discord Servers.`)
+        .setThumbnail("https://i.imgur.com/JlAQDef.png")
+        .addFields({
+            name: `Bot's Developer`,
+            value: `TwilightZebby`,
+            inline: true
+        }, {
+            name: `Bot's Version`,
+            value: `${version}`,
+            inline: true
+        }, {
+            name: `Discord.JS Version`,
+            value: `${dependencies["discord.js"]}`,
+            inline: true
+        }, {
+            name: `Server Count`,
+            value: `Around ${DiscordClient.guilds.cache.size}`,
+            inline: true
+        });
+
+        // ACK to User
+        await slashCommand.reply({ ephemeral: true, embeds: [infoEmbed] });
+        return;
     },
 
 
