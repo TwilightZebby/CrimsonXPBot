@@ -1,1 +1,2 @@
-Private Levelling Bot for Dr1fterX's Community Discord Server.
+# CrimsonXP Bot
+A highly-customisable Levelling Bot for Discord.
