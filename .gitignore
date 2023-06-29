@@ -2,6 +2,7 @@
 config.js
 /.vscode
 deployCommands.js
+tables.js
 
 /Backgrounds/Card
 /Backgrounds/Broadcast
