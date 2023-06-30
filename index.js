@@ -1,5 +1,6 @@
 const { RateLimitError, DMChannel } = require("discord.js");
 const fs = require("fs");
+const Mongoose = require("mongoose");
 
 const { DiscordClient, Collections } = require("./constants.js");
 const Config = require("./config.js");
@@ -67,7 +68,7 @@ for ( const File of ModalFiles )
 // DISCORD - READY EVENT
 DiscordClient.once('ready', () => {
     DiscordClient.user.setPresence({ status: 'online' });
-    console.log(`${DiscordClient.user.tag} is online and ready!`);
+    console.log(`${DiscordClient.user.username} is online and ready!`);
 });
 
 
@@ -91,6 +92,9 @@ DiscordClient.on('error', (err) => { return console.error("***DISCORD ERROR: ", 
 
 // Discord Rate Limit - Only uncomment when debugging
 //DiscordClient.rest.on('rateLimited', (RateLimitError) => { return console.log("***DISCORD RATELIMIT HIT: ", RateLimitError); });
+
+// Mongoose Errors
+Mongoose.connection.on('error', console.error);
 
 
 
@@ -203,4 +207,5 @@ DiscordClient.on('interactionCreate', async (interaction) => {
 
 /******************************************************************************* */
 
-DiscordClient.login(Config.TOKEN);
+DiscordClient.login(Config.TOKEN).catch(console.error);
+Mongoose.connect(Config.MongoString).catch(console.error);

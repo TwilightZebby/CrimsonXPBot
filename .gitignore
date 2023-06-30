@@ -2,7 +2,8 @@
 config.js
 /.vscode
 deployCommands.js
-tables.js
+
+/Mongoose
 
 /Backgrounds/Card
 /Backgrounds/Broadcast
