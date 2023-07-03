@@ -206,6 +206,42 @@ DiscordClient.on('interactionCreate', async (interaction) => {
 
 
 /******************************************************************************* */
+// DISCORD - GUILD CREATE EVENT (This Bot joined a Guild)
+const SetupGuild = require("./BotModules/Database/SetupGuild.js");
+
+DiscordClient.on("guildCreate", async (guild) => {
+    // Setup Database for newly joined Guild
+    await SetupGuild.main(guild);
+    return;
+});
+
+
+
+
+
+
+
+
+/******************************************************************************* */
+// DISCORD - GUILD DELETE EVENT (This Bot left a Guild, due to any reason)
+const RemoveGuild = require('./BotModules/Database/RemoveGuild.js');
+
+DiscordClient.on("guildDelete", async (guild) => {
+    // Remove Database entries due to Bot leaving the Guild
+    await RemoveGuild.main(guild);
+
+    return;
+});
+
+
+
+
+
+
+
+
+
+/******************************************************************************* */
 
 DiscordClient.login(Config.TOKEN).catch(console.error);
 Mongoose.connect(Config.MongoString).catch(console.error);

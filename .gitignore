@@ -2,6 +2,7 @@
 config.js
 /.vscode
 deployCommands.js
+/Interactions/SlashCommands/test.js
 
 /Mongoose
 
