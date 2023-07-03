@@ -240,6 +240,24 @@ DiscordClient.on("guildDelete", async (guild) => {
 
 
 
+/******************************************************************************* */
+// DISCORD - GUILD MEMBER REMOVE
+const RemoveMember = require("./BotModules/Database/RemoveMember.js");
+
+DiscordClient.on("guildMemberRemove", async (member) => {
+    // Remove Database entries due to the Member leaving the Guild
+    await RemoveMember.main(member);
+
+    return;
+});
+
+
+
+
+
+
+
+
 
 /******************************************************************************* */
 
