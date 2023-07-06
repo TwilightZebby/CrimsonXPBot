@@ -36,5 +36,11 @@ module.exports =
     CrimsonUris: {
         /** Main Avatar/PFP for CrimsonXP */
         CrimsonAvatar: "https://i.imgur.com/JlAQDef.png"
+    },
+
+    /** Emojis used */
+    CrimsonEmojis: {
+        GreenTick: ":white_check_mark:",
+        RedX: ":x:"
     }
 }

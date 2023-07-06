@@ -1,5 +1,6 @@
-const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, ChannelType } = require("discord.js");
-const { DiscordClient, Collections } = require("../../constants.js");
+const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, ChannelType, EmbedBuilder } = require("discord.js");
+const { DiscordClient, Collections, CustomColors, CrimsonEmojis } = require("../../constants.js");
+const { GuildConfig } = require("../../Mongoose/Models.js");
 
 module.exports = {
     // Command's Name
@@ -155,7 +156,12 @@ module.exports = {
      */
     async execute(slashCommand)
     {
-        //.
+        const subcommandName = slashCommand.options.getSubcommand();
+        const subcommandGroupName = slashCommand.options.getSubcommandGroup();
+
+        if ( subcommandName === "view" ) { await viewSettings(slashCommand); }
+
+        return;
     },
 
 
@@ -168,4 +174,45 @@ module.exports = {
     {
         //.
     }
+}
+
+
+
+
+
+
+/**
+* Grabs & Displays the current settings for the Server
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function viewSettings(slashCommand)
+{
+    // Fetch Data
+    if ( await GuildConfig.exists({ guildId: slashCommand.guildId }) == null )
+    {
+        await slashCommand.reply({ ephemeral: true,
+            content: `Sorry, it seems I cannot find any Settings for this Server.
+If this error keeps appearing: please remove me from this Server, then re-add me, to fix this error.`
+        });
+
+        return;
+    }
+
+    const GuildSettings = await GuildConfig.findOne({ guildId: slashCommand.guildId });
+
+    const SettingsEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
+    .setTitle(`Settings for ${slashCommand.guild.name}`)
+    .setDescription(`*To edit any of these, please use </settings edit:${slashCommand.commandId}>*`)
+    .addFields(
+        { name: `Broadcast Channel`, value: `${GuildSettings.broadcastChannel === "DISABLE" ? `${CrimsonEmojis.RedX} Disabled` : GuildSettings.broadcastChannel === "CURRENT" ? "User's Current Channel" : `<#${GuildSettings.broadcastChannel}>`}` },
+        { name: `Text XP`, value: `${GuildSettings.textXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
+        { name: `Voice XP`, value: `${GuildSettings.voiceXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
+        { name: `Decaying XP`, value: `${GuildSettings.decayingXp ? `${CrimsonEmojis.GreenTick} Enabled`: `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
+        { name: `Level UP Message`, value: `${GuildSettings.rankupMessage}` },
+        { name: `Level DOWN Message`, value: `${GuildSettings.rankdownMessage}` }
+    );
+
+    await slashCommand.reply({ ephemeral: true, embeds: [SettingsEmbed] });
+
+    return;
 }
