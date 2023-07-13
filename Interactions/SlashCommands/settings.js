@@ -1,5 +1,5 @@
-const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, ChannelType, EmbedBuilder } = require("discord.js");
-const { DiscordClient, Collections, CustomColors, CrimsonEmojis, CrimsonUris } = require("../../constants.js");
+const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, EmbedBuilder, ApplicationCommandOptionChoiceData, TextChannel } = require("discord.js");
+const { CustomColors, CrimsonEmojis, CrimsonUris } = require("../../constants.js");
 const { GuildConfig } = require("../../Mongoose/Models.js");
 
 module.exports = {
@@ -173,7 +173,46 @@ module.exports = {
      */
     async autocomplete(autocompleteInteraction)
     {
-        //.
+        // Check Subcommand this Option is for
+        const SubcommandFetched = autocompleteInteraction.options.getSubcommand();
+        // Grab Focused Value
+        const FocusedValue = autocompleteInteraction.options.getFocused();
+        /** @type {Array<ApplicationCommandOptionChoiceData<String>>} */
+        let filterResponse = [ {name: "Disable Level Broadcasts", value: "DISABLE"}, {name: "Broadcast in User's current Channel", value: "CURRENT"} ];
+
+        // Fetch TEXT Channels the Bot has access to in the Guild
+        let channelList = await autocompleteInteraction.guild.channels.fetch();
+        channelList = channelList.filter(channel => channel instanceof TextChannel);
+
+        // Convert into the Array
+        channelList.forEach(channel => {
+            let temp = { name: `#${channel.name}`, value: channel.id };
+            filterResponse.push(temp);
+        });
+
+        // Filter Array based on User Input, if any
+        if ( !FocusedValue || FocusedValue == "" || FocusedValue == " " )
+        {
+            // Slice to cut down to 25 Choices only, then ACK
+            await autocompleteInteraction.respond(filterResponse.slice(0, 24));
+            return;
+        }
+        else
+        {
+            filterResponse = filterResponse.filter(option => {
+                let returnValue = false;
+
+                if ( option.name.toLowerCase().includes(FocusedValue.toLowerCase()) ) { returnValue = true; }
+                if ( option.name.toLowerCase().startsWith(`#${FocusedValue.toLowerCase()}`) ) { returnValue = true; }
+                // Next one is just to support use of IDs as a User Input
+                if ( option.value.toLowerCase() === FocusedValue.toLowerCase() ) { returnValue = true; }
+                return returnValue;
+            });
+
+            // Slice to cut down to 25 Choices only, then ACK
+            await autocompleteInteraction.respond(filterResponse.slice(0, 24));
+            return;
+        }
     }
 }
 
@@ -258,6 +297,20 @@ If this error keeps appearing: please remove me from this Server, then re-add me
     .setTitle(`Edited Settings for ${slashCommand.guild.name}`)
     .setDescription(`*To view all the settings, please use </settings view:${slashCommand.commandId}>*`);
 
+
+    if ( updateBroadcastChannel != null )
+    {
+        let testChannel = slashCommand.guild.channels.resolve(updateBroadcastChannel);
+        if ( updateBroadcastChannel !== "DISABLE" && updateBroadcastChannel !== "CURRENT" && testChannel == null )
+        {
+            editEmbed.addFields({ name: `⚠ Broadcast Channel Edit Failed`, value: `**Error:** Given value does not match expected values from Autocomplete Options. Please make sure to use Autocomplete selections!` });
+        }
+        else
+        {
+            GuildSettings.broadcastChannel = updateBroadcastChannel;
+            editEmbed.addFields({ name: `Broadcast Channel`, value: `${updateBroadcastChannel === "DISABLE" ? `${CrimsonEmojis.RedX} Disabled` : updateBroadcastChannel === "CURRENT" ? "User's Current Channel" : `<#${updateBroadcastChannel}>`}` });
+        }
+    }
     if ( updateTextXp != null )
     {
         GuildSettings.textXp = updateTextXp;
@@ -277,7 +330,6 @@ If this error keeps appearing: please remove me from this Server, then re-add me
     {
         if ( !updatePromoteMessage.includes("{user}") || !updatePromoteMessage.includes("{level}") )
         {
-            updatePromoteFailed = true;
             editEmbed.addFields({ name: `⚠ Promotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
         }
         else
@@ -290,7 +342,6 @@ If this error keeps appearing: please remove me from this Server, then re-add me
     {
         if ( !updateDemoteMessage.includes("{user}") || !updateDemoteMessage.includes("{level}") )
         {
-            updateDemoteFailed = true;
             editEmbed.addFields({ name: `⚠ Demotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
         }
         else
