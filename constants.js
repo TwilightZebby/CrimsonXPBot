@@ -35,12 +35,15 @@ module.exports =
     /** URLs/URIs used */
     CrimsonUris: {
         /** Main Avatar/PFP for CrimsonXP */
-        CrimsonAvatar: "https://i.imgur.com/JlAQDef.png"
+        CrimsonAvatar: "https://i.imgur.com/JlAQDef.png",
+        /** Main Invite Link to Support Server */
+        SupportServerInvite: "https://discord.gg/discord-developers" // Placeholder for now, will replace later.
     },
 
     /** Emojis used */
     CrimsonEmojis: {
         GreenTick: ":white_check_mark:",
-        RedX: ":x:"
+        RedX: ":x:",
+        Warning: ":warning:"
     }
 }

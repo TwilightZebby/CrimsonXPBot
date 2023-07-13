@@ -1,5 +1,5 @@
 const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, ChannelType, EmbedBuilder } = require("discord.js");
-const { DiscordClient, Collections, CustomColors, CrimsonEmojis } = require("../../constants.js");
+const { DiscordClient, Collections, CustomColors, CrimsonEmojis, CrimsonUris } = require("../../constants.js");
 const { GuildConfig } = require("../../Mongoose/Models.js");
 
 module.exports = {
@@ -62,12 +62,12 @@ module.exports = {
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: "view",
-                description: "View the current settings for this Server"
+                description: "View the current CrimsonXP settings for this Server"
             },
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: "edit",
-                description: "Change the settings for this Server",
+                description: "Change the CrimsonXP settings for this Server",
                 options: [
                     {
                         type: ApplicationCommandOptionType.String,
@@ -160,6 +160,7 @@ module.exports = {
         const subcommandGroupName = slashCommand.options.getSubcommandGroup();
 
         if ( subcommandName === "view" ) { await viewSettings(slashCommand); }
+        else if ( subcommandName === "edit" ) { await editSettings(slashCommand); }
 
         return;
     },
@@ -208,11 +209,104 @@ If this error keeps appearing: please remove me from this Server, then re-add me
         { name: `Text XP`, value: `${GuildSettings.textXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
         { name: `Voice XP`, value: `${GuildSettings.voiceXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
         { name: `Decaying XP`, value: `${GuildSettings.decayingXp ? `${CrimsonEmojis.GreenTick} Enabled`: `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
-        { name: `Level UP Message`, value: `${GuildSettings.rankupMessage}` },
-        { name: `Level DOWN Message`, value: `${GuildSettings.rankdownMessage}` }
+        { name: `Promotion Message`, value: `${GuildSettings.rankupMessage}` },
+        { name: `Demotion Message`, value: `${GuildSettings.rankdownMessage}` }
     );
 
     await slashCommand.reply({ ephemeral: true, embeds: [SettingsEmbed] });
 
+    return;
+}
+
+
+
+
+
+
+/**
+* Updates the current settings for the Server
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function editSettings(slashCommand)
+{
+    await slashCommand.deferReply({ ephemeral: true });
+
+    // Fetch Data
+    if ( await GuildConfig.exists({ guildId: slashCommand.guildId }) == null )
+    {
+        await slashCommand.editReply({
+            content: `Sorry, it seems I cannot find any Settings for this Server.
+If this error keeps appearing: please remove me from this Server, then re-add me, to fix this error.`
+        });
+
+        return;
+    }
+
+    const GuildSettings = await GuildConfig.findOne({ guildId: slashCommand.guildId });
+
+    // Update based on given values
+    const updateBroadcastChannel = slashCommand.options.getString("broadcast_channel");
+    const updateTextXp = slashCommand.options.getBoolean("text_xp");
+    const updateVoiceXp = slashCommand.options.getBoolean("voice_xp");
+    const updateDecayXp = slashCommand.options.getBoolean("decaying_xp");
+    const updatePromoteMessage = slashCommand.options.getString("promote_msg");
+    const updateDemoteMessage = slashCommand.options.getString("demote_msg");
+
+
+    // For Embed to ACK back to User
+    const editEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
+    .setTitle(`Edited Settings for ${slashCommand.guild.name}`)
+    .setDescription(`*To view all the settings, please use </settings view:${slashCommand.commandId}>*`);
+
+    if ( updateTextXp != null )
+    {
+        GuildSettings.textXp = updateTextXp;
+        editEmbed.addFields({ name: `Text XP`, value: `${updateTextXp}`, inline: true });
+    }
+    if ( updateVoiceXp != null )
+    {
+        GuildSettings.voiceXp = updateVoiceXp;
+        editEmbed.addFields({ name: `Voice XP`, value: `${updateVoiceXp}`, inline: true });
+    }
+    if ( updateDecayXp != null )
+    {
+        GuildSettings.decayingXp = updateDecayXp;
+        editEmbed.addFields({ name: `Decaying XP`, value: `${updateDecayXp}`, inline: true });
+    }
+    if ( updatePromoteMessage != null )
+    {
+        if ( !updatePromoteMessage.includes("{user}") || !updatePromoteMessage.includes("{level}") )
+        {
+            updatePromoteFailed = true;
+            editEmbed.addFields({ name: `⚠ Promotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
+        }
+        else
+        {
+            GuildSettings.rankupMessage = updatePromoteMessage;
+            editEmbed.addFields({ name: `Promotion Message`, value: `${updatePromoteMessage}` });
+        }
+    }
+    if ( updateDemoteMessage != null )
+    {
+        if ( !updateDemoteMessage.includes("{user}") || !updateDemoteMessage.includes("{level}") )
+        {
+            updateDemoteFailed = true;
+            editEmbed.addFields({ name: `⚠ Demotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
+        }
+        else
+        {
+            GuildSettings.rankdownMessage = updateDemoteMessage;
+            editEmbed.addFields({ name: `Demotion Message`, value: `${updateDemoteMessage}` });
+        }
+    }
+
+
+    // Update & Save to Database
+    GuildSettings.isNew = false;
+    await GuildSettings.save().catch(async err => { await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **ERROR:** Failed to save changes to your Settings.\nPlease try again, if this error continues, please let us know in [CrimsonXP's Support Server](${CrimsonUris.SupportServerInvite})!` }); });
+
+
+    // ACK
+    await slashCommand.editReply({ embeds: [editEmbed] });
     return;
 }
