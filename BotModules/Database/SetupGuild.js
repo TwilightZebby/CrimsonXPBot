@@ -13,8 +13,7 @@ module.exports = {
         if ( checkConfig != null ) { return; }
 
         // Setup Tables
-        let newGuildConfig = await GuildConfig.create({ guildId: guild.id });
-        console.log(newGuildConfig);
+        await GuildConfig.create({ guildId: guild.id });
 
         return;
     }

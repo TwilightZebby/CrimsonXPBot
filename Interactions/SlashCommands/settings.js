@@ -1,6 +1,11 @@
-const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, EmbedBuilder, ApplicationCommandOptionChoiceData, TextChannel } = require("discord.js");
+const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, EmbedBuilder, ApplicationCommandOptionChoiceData, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { CustomColors, CrimsonEmojis, CrimsonUris } = require("../../constants.js");
-const { GuildConfig } = require("../../Mongoose/Models.js");
+const { GuildConfig, GuildRole } = require("../../Mongoose/Models.js");
+
+/** Used by User to view all Level Roles for Server */
+const ViewRolesButton = new ActionRowBuilder().addComponents([
+    new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewRoles`).setLabel("View Level Roles")
+]);
 
 module.exports = {
     // Command's Name
@@ -161,6 +166,7 @@ module.exports = {
 
         if ( subcommandName === "view" ) { await viewSettings(slashCommand); }
         else if ( subcommandName === "edit" ) { await editSettings(slashCommand); }
+        else if ( subcommandGroupName === "role" && subcommandName === "add" ) { await addLevelRole(slashCommand); }
 
         return;
     },
@@ -227,10 +233,12 @@ module.exports = {
 */
 async function viewSettings(slashCommand)
 {
+    await slashCommand.deferReply({ ephemeral: true });
+
     // Fetch Data
     if ( await GuildConfig.exists({ guildId: slashCommand.guildId }) == null )
     {
-        await slashCommand.reply({ ephemeral: true,
+        await slashCommand.editReply({
             content: `Sorry, it seems I cannot find any Settings for this Server.
 If this error keeps appearing: please remove me from this Server, then re-add me, to fix this error.`
         });
@@ -242,7 +250,9 @@ If this error keeps appearing: please remove me from this Server, then re-add me
 
     const SettingsEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
     .setTitle(`Settings for ${slashCommand.guild.name}`)
-    .setDescription(`*To edit any of these, please use </settings edit:${slashCommand.commandId}>*`)
+    .setDescription(`- *To edit any of these, please use </settings edit:${slashCommand.commandId}>*
+- *To add a Level Role, use </settings role add:${slashCommand.commandId}>*
+- *To remove a Level Role, use </settings role remove:${slashCommand.commandId}>*`)
     .addFields(
         { name: `Broadcast Channel`, value: `${GuildSettings.broadcastChannel === "DISABLE" ? `${CrimsonEmojis.RedX} Disabled` : GuildSettings.broadcastChannel === "CURRENT" ? "User's Current Channel" : `<#${GuildSettings.broadcastChannel}>`}` },
         { name: `Text XP`, value: `${GuildSettings.textXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
@@ -252,7 +262,15 @@ If this error keeps appearing: please remove me from this Server, then re-add me
         { name: `Demotion Message`, value: `${GuildSettings.rankdownMessage}` }
     );
 
-    await slashCommand.reply({ ephemeral: true, embeds: [SettingsEmbed] });
+    // Create Button for viewing Level Roles, if there is at least one
+    if ( await GuildRole.exists({ guildId: slashCommand.guildId }) != null )
+    {
+        await slashCommand.editReply({ embeds: [SettingsEmbed], components: [ViewRolesButton] });
+    }
+    else
+    {
+        await slashCommand.editReply({ embeds: [SettingsEmbed] });
+    }
 
     return;
 }
@@ -354,10 +372,68 @@ If this error keeps appearing: please remove me from this Server, then re-add me
 
     // Update & Save to Database
     GuildSettings.isNew = false;
-    await GuildSettings.save().catch(async err => { await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **ERROR:** Failed to save changes to your Settings.\nPlease try again, if this error continues, please let us know in [CrimsonXP's Support Server](${CrimsonUris.SupportServerInvite})!` }); });
+    await GuildSettings.save()
+    .catch(async err => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **ERROR:** Failed to save changes to your Settings.\nPlease try again, if this error continues, please let us know in [CrimsonXP's Support Server](${CrimsonUris.SupportServerInvite})!` });
+        return;
+    })
+    .then(async editedSettingsEntry => {
+        await slashCommand.editReply({ embeds: [editEmbed] });
+    });
+
+    return;
+}
 
 
-    // ACK
-    await slashCommand.editReply({ embeds: [editEmbed] });
+
+
+
+
+/**
+* Adds a new Level Role to the Server's Settings
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function addLevelRole(slashCommand)
+{
+    await slashCommand.deferReply({ ephemeral: true });
+
+    // Fetch User Inputs
+    const InputLevel = slashCommand.options.getInteger("level", true);
+    const InputRole = slashCommand.options.getRole("role", true);
+
+    // Ensure not atEveryone!
+    if ( InputRole.id === slashCommand.guildId )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you can__not__ use atEveryone (@everyone) as a Level Role!` });
+        return;
+    }
+
+    // Check for duplicates
+    if ( await GuildRole.exists({ minimumLevel: InputLevel }) != null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you already have a Level Role assigned to Level **${InputLevel}**!` });
+        return;
+    }
+    if ( await GuildRole.exists({ roleId: InputRole.id }) != null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you already have <@&${InputRole.id}> as a Level Role for this Server!` });
+        return;
+    }
+
+
+    // Add & save to database
+    await GuildRole.create({
+        guildId: slashCommand.guildId,
+        roleId: InputRole.id,
+        minimumLevel: InputLevel
+    })
+    .catch(async err => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to save your new Level Role to the database. Please wait a few minutes, then try again.` });
+        return;
+    })
+    .then(async newRoleEntry => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully added <@&${InputRole.id}> as the Level Role for Level **${InputLevel}**!` });
+    });
+
     return;
 }
