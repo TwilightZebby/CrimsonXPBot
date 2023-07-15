@@ -167,6 +167,7 @@ module.exports = {
         if ( subcommandName === "view" ) { await viewSettings(slashCommand); }
         else if ( subcommandName === "edit" ) { await editSettings(slashCommand); }
         else if ( subcommandGroupName === "role" && subcommandName === "add" ) { await addLevelRole(slashCommand); }
+        else if ( subcommandGroupName === "role" && subcommandName === "remove" ) { await removeLevelRole(slashCommand); }
 
         return;
     },
@@ -433,6 +434,53 @@ async function addLevelRole(slashCommand)
     })
     .then(async newRoleEntry => {
         await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully added <@&${InputRole.id}> as the Level Role for Level **${InputLevel}**!` });
+    });
+
+    return;
+}
+
+
+
+
+
+
+/**
+* Removes an existing Level Role from the Server's Settings
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function removeLevelRole(slashCommand)
+{
+    await slashCommand.deferReply({ ephemeral: true });
+
+    // Fetch User Input
+    const InputRole = slashCommand.options.getRole("role", true);
+
+    // Ensure not atEveryone!
+    if ( InputRole.id === slashCommand.guildId )
+    {
+        await slashCommand.editReply({ content: `Sorry, but try picking a Role that __isn't__ @everyone!` });
+        return;
+    }
+
+    // Check it actually exists in database first
+    if ( await GuildRole.exists({ roleId: InputRole.id }) == null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but <@&${InputRole.id}> is __not__ set as a Level Role for this Server!` });
+        return;
+    }
+
+
+    // Remove from & save database
+    await GuildRole.deleteOne({
+        guildId: slashCommand.guildId,
+        roleId: InputRole.id
+    })
+    .catch(async err => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to remove the <@&${InputRole.id}> Level Role from the database. Please wait a few minutes, then try again.` });
+        return;
+    })
+    .then(async oldRoleEntry => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully removed <@&${InputRole.id}> from your Level Role Settings!` });
     });
 
     return;
