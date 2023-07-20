@@ -289,6 +289,21 @@ async function editSettings(slashCommand)
 {
     await slashCommand.deferReply({ ephemeral: true });
 
+    // Fetch Inputs
+    const updateBroadcastChannel = slashCommand.options.getString("broadcast_channel");
+    const updateTextXp = slashCommand.options.getBoolean("text_xp");
+    const updateVoiceXp = slashCommand.options.getBoolean("voice_xp");
+    const updateDecayXp = slashCommand.options.getBoolean("decaying_xp");
+    const updatePromoteMessage = slashCommand.options.getString("promote_msg");
+    const updateDemoteMessage = slashCommand.options.getString("demote_msg");
+
+    // Ensure at least one input was actually given
+    if ( updateBroadcastChannel == null && updateTextXp == null && updateVoiceXp == null && updateDecayXp == null && updatePromoteMessage == null && updateDemoteMessage == null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you didn't provide any new Settings to update!` });
+        return;
+    }
+
     // Fetch Data
     if ( await GuildConfig.exists({ guildId: slashCommand.guildId }) == null )
     {
@@ -301,14 +316,6 @@ If this error keeps appearing: please remove me from this Server, then re-add me
     }
 
     const GuildSettings = await GuildConfig.findOne({ guildId: slashCommand.guildId });
-
-    // Update based on given values
-    const updateBroadcastChannel = slashCommand.options.getString("broadcast_channel");
-    const updateTextXp = slashCommand.options.getBoolean("text_xp");
-    const updateVoiceXp = slashCommand.options.getBoolean("voice_xp");
-    const updateDecayXp = slashCommand.options.getBoolean("decaying_xp");
-    const updatePromoteMessage = slashCommand.options.getString("promote_msg");
-    const updateDemoteMessage = slashCommand.options.getString("demote_msg");
 
 
     // For Embed to ACK back to User

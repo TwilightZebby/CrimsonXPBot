@@ -1,5 +1,5 @@
 const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder } = require("discord.js");
-const { DiscordClient, Collections, CustomColors, CrimsonEmojis } = require("../../constants.js");
+const { CustomColors, CrimsonEmojis, StaticStrings, CrimsonUris } = require("../../constants.js");
 const { UserConfig } = require("../../Mongoose/Models.js");
 
 module.exports = {
@@ -159,7 +159,7 @@ async function viewPreferences(slashCommand)
 - *To edit your Rank Card, use </preferences background rank:${slashCommand.commandId}>*
 - *To edit your Broadcast Card, use </preferences background broadcast:${slashCommand.commandId}>*`)
     .addFields(
-        { name: `Mentioned in Broadcasts?`, value: `${userPreferences.broadcastMentions ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}` },
+        { name: `Mentioned in Broadcasts`, value: `${userPreferences.broadcastMentions ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}` },
         { name: `Rank Card Background`, value: `${userPreferences.cardBackground === "DISABLE" ? `None` : userPreferences.cardBackground}` },
         { name: `Broadcast Card Background`, value: `${userPreferences.broadcastBackground === "DISABLE" ? `None` : userPreferences.broadcastBackground}` }
     );
@@ -167,5 +167,100 @@ async function viewPreferences(slashCommand)
     // ACK
     await slashCommand.editReply({ embeds: [PreferenceEmbed] });
 
+    return;
+}
+
+
+
+
+
+
+/**
+* Edits the User's Preferences
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function editPreferences(slashCommand)
+{
+    await slashCommand.deferReply({ ephemeral: true });
+
+    // Fetch Inputs
+    const updateMentions = slashCommand.options.getBoolean("broadcast_mentions");
+
+    // Ensure at least once input was actually given
+    if ( updateMentions == null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you didn't provide any new Preferences to update!` });
+        return;
+    }
+
+    // Fetch Data
+    let userPreferences;
+
+    if ( await UserConfig.exists({ userId: slashCommand.user.id }) == null )
+    {
+        userPreferences = await UserConfig.create({ userId: slashCommand.user.id });
+    }
+    else
+    {
+        userPreferences = await UserConfig.findOne({ userId: slashCommand.user.id });
+    }
+
+    
+    // For Embed to ACK back to User
+    const EditEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
+    .setTitle(`Edited Preferences for ${slashCommand.user.username}`)
+    .setDescription(`- *To view all your Preferences, use </preferences view:${slashCommand.commandId}>*`);
+
+
+    if ( updateMentions != null )
+    {
+        userPreferences.broadcastMentions = updateMentions;
+        EditEmbed.addFields({ name: `Mentioned in Broadcasts`, value: `${updateMentions ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}` });
+    }
+
+
+    // Update & Save to Database
+    await userPreferences.save()
+    .catch(async err => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **ERROR:** Failed to save changes to your Preferences.\nPlease try again, if this error contiunes, please let us know in [CrimsonXP's Support Server](${CrimsonUris.SupportServerInvite})!` });
+        return;
+    })
+    .then(async editedPreferencesEntry => {
+        await slashCommand.editReply({ embeds: [EditEmbed] });
+    });
+
+    return;
+}
+
+
+
+
+
+
+/**
+* Starts the editing process for editing the User's Rank Card
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function editRankCard(slashCommand)
+{
+    // Placeholder for now
+    await slashCommand.reply({ ephemeral: true, content: StaticStrings.CommandNotImplemented });
+    return;
+}
+
+
+
+
+
+
+
+/**
+* Starts the editing process for editing the User's Broadcast Card
+* @param {ChatInputCommandInteraction} slashCommand 
+*/
+async function editBroadcastCard(slashCommand)
+{
+    // Placeholder for now
+    await slashCommand.reply({ ephemeral: true, content: StaticStrings.CommandNotImplemented });
     return;
 }

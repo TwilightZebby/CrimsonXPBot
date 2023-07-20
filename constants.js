@@ -45,5 +45,10 @@ module.exports =
         GreenTick: ":white_check_mark:",
         RedX: ":x:",
         Warning: ":warning:"
+    },
+
+    /** Static Strings */
+    StaticStrings: {
+        CommandNotImplemented: `Sorry, but this Command hasn't been implemented at this stage!\nDon't worry, it'll be added before full release!`
     }
 }
