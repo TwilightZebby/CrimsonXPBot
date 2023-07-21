@@ -1,5 +1,5 @@
 const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder } = require("discord.js");
-const { DiscordClient, Collections, CustomColors } = require("../../constants.js");
+const { CustomColors } = require("../../constants.js");
 const { GuildXp, UserConfig } = require("../../Mongoose/Models.js");
 const { abbreviateNumber } = require("../../BotModules/Utility.js");
 
