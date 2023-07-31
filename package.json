@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.41",
     "bufferutil": "^4.0.6",
+    "canvas": "^2.11.2",
+    "canvas-extras": "^1.0.7",
     "discord.js": "^14.11.0",
     "erlpack": "github:discord/erlpack",
     "mongoose": "^7.3.1",
