@@ -114,6 +114,7 @@ async function grantXp(message)
     else
     {
         fetchedDocument = await GuildXp.findOne({ guildId: message.guildId, userId: message.author.id });
+        fetchedDocument.isNew = false;
     }
 
 
