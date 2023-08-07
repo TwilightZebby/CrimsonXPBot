@@ -106,6 +106,7 @@ Mongoose.connection.on('error', console.error);
 /******************************************************************************* */
 // DISCORD - MESSAGE CREATE EVENT
 const TextCommandHandler = require("./BotModules/Handlers/TextCommandHandler.js");
+const { checkBlocklist } = require("./BotModules/Levelling/MessageXp.js");
 
 DiscordClient.on('messageCreate', async (message) => {
     // Partials
@@ -130,6 +131,7 @@ DiscordClient.on('messageCreate', async (message) => {
     if ( textCommandStatus === false )
     {
         // No Command detected
+        await checkBlocklist(message); // Start XP Grant Module
         return;
     }
     else if ( textCommandStatus === null )
