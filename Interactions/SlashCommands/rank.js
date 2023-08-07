@@ -2,6 +2,7 @@ const { ChatInputCommandInteraction, ChatInputApplicationCommandData, Autocomple
 const { CustomColors } = require("../../constants.js");
 const { GuildXp, UserConfig } = require("../../Mongoose/Models.js");
 const { abbreviateNumber } = require("../../BotModules/Utility.js");
+const { calculateLevel } = require("../../BotModules/Levelling/Levels.js");
 
 module.exports = {
     // Command's Name
@@ -124,7 +125,7 @@ module.exports = {
             // Embed Time!
             const RankEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
             .addFields(
-                { name: `Level`, value: `N/A` },
+                { name: `Level`, value: `${calculateLevel(userXpData.textXp)}` },
                 { name: `Total XP`, value: `${abbreviateNumber(userXpData.textXp + userXpData.voiceXp, 0)}`, inline: true },
                 { name: `Text XP`, value: `${abbreviateNumber(userXpData.textXp)}`, inline: true },
                 { name: `Voice XP`, value: `${abbreviateNumber(userXpData.voiceXp)}`, inline: true }
