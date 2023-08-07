@@ -107,7 +107,7 @@ async function grantXp(message)
     // Create new Document if this is User's first time in Server
     let fetchedDocument;
 
-    if ( await GuildXp.exists({ guildId: message.guildId, userId: message.author.id }) )
+    if ( await GuildXp.exists({ guildId: message.guildId, userId: message.author.id }) == null )
     {
         fetchedDocument = await GuildXp.create({ guildId: message.guildId, userId: message.author.id });
     }
