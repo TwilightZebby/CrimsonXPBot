@@ -7,7 +7,7 @@ module.exports = {
      */
     generateXp()
     {
-        return Math.floor( ( Math.random() * 15 ) + 5 );
+        return Math.floor( ( Math.random() * 25 ) + 15 );
     }
 
 };
