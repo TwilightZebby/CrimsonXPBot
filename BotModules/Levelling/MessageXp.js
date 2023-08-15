@@ -2,7 +2,8 @@ const { Collection, Message } = require("discord.js");
 const { GlobalBlocklist, GuildBlocklist, GuildXp } = require("../../Mongoose/Models");
 const { generateXp } = require("./Experience");
 const { calculateLevel, compareLevels } = require("./Levels");
-const { levelUp } = require("./Broadcasts");
+const { levelUp, levelDown } = require("./Broadcasts");
+const { promoteRole } = require("./LevelRoles");
 
 const XpCooldown = new Collection();
 
@@ -137,9 +138,11 @@ async function grantXp(message)
 
         case "LEVEL_UP":
             await levelUp(message, newLevel);
+            await promoteRole(message, newLevel);
             break;
 
         case "LEVEL_DOWN":
+            await levelDown(message, newLevel);
             break;
 
         default:
