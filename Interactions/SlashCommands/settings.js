@@ -291,7 +291,7 @@ If this error keeps appearing: please remove me from this Server, then re-add me
     if ( await GuildTextRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewTextRoleButton); }
     if ( await GuildVoiceRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewVoiceRoleButton); }
     
-    if ( viewRolesRow.data.components.length > 0 ) { await slashCommand.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
+    if ( viewRolesRow.data.components != undefined && viewRolesRow.data.components.length > 0 ) { await slashCommand.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
     else { await slashCommand.editReply({ embeds: [SettingsEmbed] }); }
 
     return;

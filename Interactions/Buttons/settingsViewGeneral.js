@@ -65,7 +65,7 @@ If this error keeps appearing: please remove me from this Server, then re-add me
         if ( await GuildVoiceRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewVoiceRoleButton); }
 
         // ACK
-        if ( viewRolesRow.data.components.length > 0 ) { await buttonInteraction.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
+        if ( viewRolesRow.data.components != undefined && viewRolesRow.data.components.length > 0 ) { await buttonInteraction.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
         else { await buttonInteraction.editReply({ embeds: [SettingsEmbed] }); }
 
         return;
