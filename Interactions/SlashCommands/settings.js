@@ -20,16 +20,16 @@ module.exports = {
 
     // Cooldown, in seconds
     //     Defaults to 3 seconds if missing
-    Cooldown: 30,
+    Cooldown: 15,
 
     // Cooldowns for specific subcommands and/or subcommand-groups
     //     IF SUBCOMMAND: name as "subcommandName"
     //     IF SUBCOMMAND GROUP: name as "subcommandGroupName_subcommandName"
     SubcommandCooldown: {
-        "view": 15,
-        "edit": 30,
-        "role_add": 30,
-        "role_remove": 30
+        "view": 10,
+        "edit": 15,
+        "role_add": 15,
+        "role_remove": 15
     },
 
     // Scope of Command's usage
@@ -291,7 +291,7 @@ If this error keeps appearing: please remove me from this Server, then re-add me
     if ( await GuildTextRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewTextRoleButton); }
     if ( await GuildVoiceRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewVoiceRoleButton); }
     
-    if ( viewRolesRow.data.components != undefined && viewRolesRow.data.components.length > 0 ) { await slashCommand.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
+    if ( viewRolesRow.components.length > 0 ) { await slashCommand.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
     else { await slashCommand.editReply({ embeds: [SettingsEmbed] }); }
 
     return;
