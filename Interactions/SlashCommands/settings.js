@@ -464,6 +464,24 @@ async function addLevelRole(slashCommand)
         return;
     }
 
+    // Ensure Bot has Permissions to Manage Roles!
+    if ( !slashCommand.appPermissions.has(PermissionFlagsBits.ManageRoles) )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you cannot add any Level Roles while I'm missing the **Manage Roles** Permission.\nI need that Permission to be able to grant your Server Members the Level Roles you set!` });
+        return;
+    }
+
+
+    // Ensure inputted Role is LOWER than Bot's own highest Role
+    let botMember = slashCommand.guild.members.me;
+    let compareRoles = slashCommand.guild.roles.comparePositions(InputRole.id, botMember.roles.highest.id);
+    if ( compareRoles >= 0 )
+    {
+        await slashCommand.editReply({ content: `Sorry, but <@&${InputRole.id}> cannot be added as a Level Role.\nThis is due to that Role being higher than my own highest Role ( <@&${botMember.roles.highest.id}> ).\nI can only accept Roles LOWER than my own highest Role!` });
+        return;
+    }
+
+
     // Go depending on Level Type
     if ( InputType === "TEXT" ) { await addTextRole(slashCommand, InputLevel, InputRole); }
     else if ( InputType === "VOICE" ) { await addVoiceRole(slashCommand, InputLevel, InputRole); }
