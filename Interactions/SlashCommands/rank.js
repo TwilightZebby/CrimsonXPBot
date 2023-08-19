@@ -124,15 +124,16 @@ module.exports = {
         {
             // Embed Time!
             const RankEmbed = new EmbedBuilder().setColor(CustomColors.CrimsonMain)
+            .setThumbnail(slashCommand.member.displayAvatarURL())
             .addFields(
-                { name: `Level`, value: `${calculateLevel(userXpData.textXp)}` },
-                { name: `Total XP`, value: `${abbreviateNumber(userXpData.textXp + userXpData.voiceXp, 0)}`, inline: true },
+                { name: `Text Level`, value: `${calculateLevel(userXpData.textXp)}`, inline: true },
                 { name: `Text XP`, value: `${abbreviateNumber(userXpData.textXp)}`, inline: true },
-                { name: `Voice XP`, value: `${abbreviateNumber(userXpData.voiceXp)}`, inline: true }
+                /* { name: `Voice Level`, value: `${calculateLevel(userXpData.voiceXp)}`, inline: true },
+                { name: `Voice XP`, value: `${abbreviateNumber(userXpData.voiceXp)}`, inline: true } */
             );
 
-            if ( InputUser != null ) { RankEmbed.setAuthor({ iconURL: InputUser.displayAvatarURL(), name: `XP Data for ${InputUser.username}` }); }
-            else { RankEmbed.setAuthor({ iconURL: slashCommand.user.displayAvatarURL(), name: `XP Data for ${slashCommand.user.username}` }); }
+            if ( InputUser != null ) { RankEmbed.setAuthor({ name: `XP Data for ${InputUser.username}` }); }
+            else { RankEmbed.setAuthor({ name: `XP Data for ${slashCommand.user.username}` }); }
 
             await slashCommand.editReply({ embeds: [RankEmbed] });
             return;

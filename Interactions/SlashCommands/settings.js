@@ -1,11 +1,11 @@
-const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, EmbedBuilder, ApplicationCommandOptionChoiceData, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { ChatInputCommandInteraction, ChatInputApplicationCommandData, AutocompleteInteraction, ApplicationCommandType, PermissionFlagsBits, ApplicationCommandOptionType, EmbedBuilder, ApplicationCommandOptionChoiceData, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, Role } = require("discord.js");
 const { CustomColors, CrimsonEmojis, CrimsonUris } = require("../../constants.js");
-const { GuildConfig, GuildRole } = require("../../Mongoose/Models.js");
+const { GuildConfig, GuildTextRole, GuildVoiceRole } = require("../../Mongoose/Models.js");
 
-/** Used by User to view all Level Roles for Server */
-const ViewRolesButton = new ActionRowBuilder().addComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewRoles`).setLabel("View Level Roles")
-]);
+
+const ViewTextRoleButton = new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewTextRoles`).setLabel("View Text Level Roles");
+const ViewVoiceRoleButton = new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewVoiceRoles`).setLabel("View Voice Level Roles");
+
 
 module.exports = {
     // Command's Name
@@ -97,13 +97,23 @@ module.exports = {
                     },
                     {
                         type: ApplicationCommandOptionType.String,
-                        name: "promote_msg",
-                        description: "The message for when Members level up. MUST include {user} and {level}",
+                        name: "promote_txt_msg",
+                        description: "The message for when Members level up (Text XP). MUST include {user} and {level}",
                     },
                     {
                         type: ApplicationCommandOptionType.String,
-                        name: "demote_msg",
-                        description: "The message for when Members level down. MUST include {user} and {level}",
+                        name: "demote_txt_msg",
+                        description: "The message for when Members level down (Text XP). MUST include {user} and {level}",
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: "promote_vc_msg",
+                        description: "The message for when Members level up (Voice XP). MUST include {user} and {level}",
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: "demote_vc_msg",
+                        description: "The message for when Members level down (Voice XP). MUST include {user} and {level}",
                     }
                 ]
             },
@@ -117,6 +127,16 @@ module.exports = {
                         name: "add",
                         description: "Add a new Level Role to be granted for Members",
                         options: [
+                            {
+                                type: ApplicationCommandOptionType.String,
+                                name: "type",
+                                description: "The Type of XP this Level Role should be for",
+                                required: true,
+                                choices: [
+                                    { name: "Text", value: "TEXT" },
+                                    { name: "Voice", value: "VOICE" }
+                                ]
+                            },
                             {
                                 type: ApplicationCommandOptionType.Integer,
                                 name: "level",
@@ -236,6 +256,8 @@ async function viewSettings(slashCommand)
 {
     await slashCommand.deferReply({ ephemeral: true });
 
+    let viewRolesRow = new ActionRowBuilder();
+
     // Fetch Data
     if ( await GuildConfig.exists({ guildId: slashCommand.guildId }) == null )
     {
@@ -259,19 +281,18 @@ If this error keeps appearing: please remove me from this Server, then re-add me
         { name: `Text XP`, value: `${GuildSettings.textXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
         { name: `Voice XP`, value: `${GuildSettings.voiceXp ? `${CrimsonEmojis.GreenTick} Enabled` : `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
         { name: `Decaying XP`, value: `${GuildSettings.decayingXp ? `${CrimsonEmojis.GreenTick} Enabled`: `${CrimsonEmojis.RedX} Disabled`}`, inline: true },
-        { name: `Promotion Message`, value: `${GuildSettings.rankupMessage}` },
-        { name: `Demotion Message`, value: `${GuildSettings.rankdownMessage}` }
+        { name: `Text Promotion Message`, value: `${GuildSettings.textUpMessage}` },
+        { name: `Text Demotion Message`, value: `${GuildSettings.textDownMessage}` },
+        { name: `Voice Promotion Message`, value: `${GuildSettings.voiceUpMessage}` },
+        { name: `Voice Demotion Message`, value: `${GuildSettings.voiceDownMessage}` }
     );
 
-    // Create Button for viewing Level Roles, if there is at least one
-    if ( await GuildRole.exists({ guildId: slashCommand.guildId }) != null )
-    {
-        await slashCommand.editReply({ embeds: [SettingsEmbed], components: [ViewRolesButton] });
-    }
-    else
-    {
-        await slashCommand.editReply({ embeds: [SettingsEmbed] });
-    }
+    // Add Button(s) for viewing Level Roles, if there is at least one set
+    if ( await GuildTextRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewTextRoleButton); }
+    if ( await GuildVoiceRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewVoiceRoleButton); }
+    
+    if ( viewRolesRow.data.components.length > 0 ) { await slashCommand.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
+    else { await slashCommand.editReply({ embeds: [SettingsEmbed] }); }
 
     return;
 }
@@ -294,11 +315,13 @@ async function editSettings(slashCommand)
     const updateTextXp = slashCommand.options.getBoolean("text_xp");
     const updateVoiceXp = slashCommand.options.getBoolean("voice_xp");
     const updateDecayXp = slashCommand.options.getBoolean("decaying_xp");
-    const updatePromoteMessage = slashCommand.options.getString("promote_msg");
-    const updateDemoteMessage = slashCommand.options.getString("demote_msg");
+    const updateTextPromoteMessage = slashCommand.options.getString("promote_txt_msg");
+    const updateTextDemoteMessage = slashCommand.options.getString("demote_txt_msg");
+    const updateVoicePromoteMessage = slashCommand.options.getString("promote_vc_msg");
+    const updateVoiceDemoteMessage = slashCommand.options.getString("demote_vc_msg");
 
     // Ensure at least one input was actually given
-    if ( updateBroadcastChannel == null && updateTextXp == null && updateVoiceXp == null && updateDecayXp == null && updatePromoteMessage == null && updateDemoteMessage == null )
+    if ( updateBroadcastChannel == null && updateTextXp == null && updateVoiceXp == null && updateDecayXp == null && updateTextPromoteMessage == null && updateTextDemoteMessage == null )
     {
         await slashCommand.editReply({ content: `Sorry, but you didn't provide any new Settings to update!` });
         return;
@@ -352,28 +375,52 @@ If this error keeps appearing: please remove me from this Server, then re-add me
         GuildSettings.decayingXp = updateDecayXp;
         editEmbed.addFields({ name: `Decaying XP`, value: `${updateDecayXp}`, inline: true });
     }
-    if ( updatePromoteMessage != null )
+    if ( updateTextPromoteMessage != null )
     {
-        if ( !updatePromoteMessage.includes("{user}") || !updatePromoteMessage.includes("{level}") )
+        if ( !updateTextPromoteMessage.includes("{user}") || !updateTextPromoteMessage.includes("{level}") )
         {
-            editEmbed.addFields({ name: `⚠ Promotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
+            editEmbed.addFields({ name: `⚠ Text Promotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
         }
         else
         {
-            GuildSettings.rankupMessage = updatePromoteMessage;
-            editEmbed.addFields({ name: `Promotion Message`, value: `${updatePromoteMessage}` });
+            GuildSettings.textUpMessage = updateTextPromoteMessage;
+            editEmbed.addFields({ name: `Text Promotion Message`, value: `${updateTextPromoteMessage}` });
         }
     }
-    if ( updateDemoteMessage != null )
+    if ( updateTextDemoteMessage != null )
     {
-        if ( !updateDemoteMessage.includes("{user}") || !updateDemoteMessage.includes("{level}") )
+        if ( !updateTextDemoteMessage.includes("{user}") || !updateTextDemoteMessage.includes("{level}") )
         {
-            editEmbed.addFields({ name: `⚠ Demotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
+            editEmbed.addFields({ name: `⚠ Text Demotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
         }
         else
         {
-            GuildSettings.rankdownMessage = updateDemoteMessage;
-            editEmbed.addFields({ name: `Demotion Message`, value: `${updateDemoteMessage}` });
+            GuildSettings.textDownMessage = updateTextDemoteMessage;
+            editEmbed.addFields({ name: `Text Demotion Message`, value: `${updateTextDemoteMessage}` });
+        }
+    }
+    if ( updateVoicePromoteMessage != null )
+    {
+        if ( !updateVoicePromoteMessage.includes("{user}") || !updateVoicePromoteMessage.includes("{level}") )
+        {
+            editEmbed.addFields({ name: `⚠ Voice Promotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
+        }
+        else
+        {
+            GuildSettings.voiceUpMessage = updateVoicePromoteMessage;
+            editEmbed.addFields({ name: `Voice Promotion Message`, value: `${updateVoicePromoteMessage}` });
+        }
+    }
+    if ( updateVoiceDemoteMessage != null )
+    {
+        if ( !updateVoiceDemoteMessage.includes("{user}") || !updateVoiceDemoteMessage.includes("{level}") )
+        {
+            editEmbed.addFields({ name: `⚠ Voice Demotion Message Edit Failed`, value: `**Error:** Values "{user}" and/or "{level}" not found in your new Message.` });
+        }
+        else
+        {
+            GuildSettings.voiceDownMessage = updateVoiceDemoteMessage;
+            editEmbed.addFields({ name: `Voice Demotion Message`, value: `${updateVoiceDemoteMessage}` });
         }
     }
 
@@ -408,6 +455,7 @@ async function addLevelRole(slashCommand)
     // Fetch User Inputs
     const InputLevel = slashCommand.options.getInteger("level", true);
     const InputRole = slashCommand.options.getRole("role", true);
+    const InputType = slashCommand.options.getString("type", true);
 
     // Ensure not atEveryone!
     if ( InputRole.id === slashCommand.guildId )
@@ -416,32 +464,9 @@ async function addLevelRole(slashCommand)
         return;
     }
 
-    // Check for duplicates
-    if ( await GuildRole.exists({ minimumLevel: InputLevel }) != null )
-    {
-        await slashCommand.editReply({ content: `Sorry, but you already have a Level Role assigned to Level **${InputLevel}**!` });
-        return;
-    }
-    if ( await GuildRole.exists({ roleId: InputRole.id }) != null )
-    {
-        await slashCommand.editReply({ content: `Sorry, but you already have <@&${InputRole.id}> as a Level Role for this Server!` });
-        return;
-    }
-
-
-    // Add & save to database
-    await GuildRole.create({
-        guildId: slashCommand.guildId,
-        roleId: InputRole.id,
-        minimumLevel: InputLevel
-    })
-    .catch(async err => {
-        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to save your new Level Role to the database. Please wait a few minutes, then try again.` });
-        return;
-    })
-    .then(async newRoleEntry => {
-        await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully added <@&${InputRole.id}> as the Level Role for Level **${InputLevel}**!` });
-    });
+    // Go depending on Level Type
+    if ( InputType === "TEXT" ) { await addTextRole(slashCommand, InputLevel, InputRole); }
+    else if ( InputType === "VOICE" ) { await addVoiceRole(slashCommand, InputLevel, InputRole); }
 
     return;
 }
@@ -470,24 +495,125 @@ async function removeLevelRole(slashCommand)
     }
 
     // Check it actually exists in database first
-    if ( await GuildRole.exists({ roleId: InputRole.id }) == null )
+    if ( await GuildTextRole.exists({ roleId: InputRole.id }) != null )
+    {
+        // Remove from & save database
+        await GuildTextRole.deleteOne({
+            guildId: slashCommand.guildId,
+            roleId: InputRole.id
+        })
+        .catch(async err => {
+            await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to remove the <@&${InputRole.id}> Text Level Role from the database. Please wait a few minutes, then try again.` });
+            return;
+        })
+        .then(async oldRoleEntry => {
+            await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully removed <@&${InputRole.id}> from your Text Level Role Settings!` });
+        });
+    }
+    else if ( await GuildVoiceRole.exists({ roleId: InputRole.id }) != null )
+    {
+        // Remove from & save database
+        await GuildVoiceRole.deleteOne({
+            guildId: slashCommand.guildId,
+            roleId: InputRole.id
+        })
+        .catch(async err => {
+            await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to remove the <@&${InputRole.id}> Voice Level Role from the database. Please wait a few minutes, then try again.` });
+            return;
+        })
+        .then(async oldRoleEntry => {
+            await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully removed <@&${InputRole.id}> from your Voice Level Role Settings!` });
+        });
+    }
+    else
     {
         await slashCommand.editReply({ content: `Sorry, but <@&${InputRole.id}> is __not__ set as a Level Role for this Server!` });
+    }
+
+
+    return;
+}
+
+
+
+
+
+/**
+ * For adding Text type Level Roles
+ * 
+ * @param {ChatInputCommandInteraction} slashCommand 
+ * @param {Number} InputLevel 
+ * @param {Role} InputRole 
+ */
+async function addTextRole(slashCommand, InputLevel, InputRole)
+{
+    // Check for duplicates
+    if ( await GuildTextRole.exists({ minimumLevel: InputLevel }) != null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you already have a Text Level Role assigned to Text Level **${InputLevel}**!` });
+        return;
+    }
+    if ( await GuildTextRole.exists({ roleId: InputRole.id }) != null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you already have <@&${InputRole.id}> as a Text Level Role for this Server!` });
         return;
     }
 
 
-    // Remove from & save database
-    await GuildRole.deleteOne({
+    // Add & save to database
+    await GuildTextRole.create({
         guildId: slashCommand.guildId,
-        roleId: InputRole.id
+        roleId: InputRole.id,
+        minimumLevel: InputLevel
     })
     .catch(async err => {
-        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to remove the <@&${InputRole.id}> Level Role from the database. Please wait a few minutes, then try again.` });
+        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to save your new Text Level Role to the database. Please wait a few minutes, then try again.` });
         return;
     })
-    .then(async oldRoleEntry => {
-        await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully removed <@&${InputRole.id}> from your Level Role Settings!` });
+    .then(async newRoleEntry => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully added <@&${InputRole.id}> as the Text Level Role for Level **${InputLevel}**!` });
+    });
+
+    return;
+}
+
+
+
+
+/**
+ * For adding Voice type Level Roles
+ * 
+ * @param {ChatInputCommandInteraction} slashCommand 
+ * @param {Number} InputLevel 
+ * @param {Role} InputRole 
+ */
+async function addVoiceRole(slashCommand, InputLevel, InputRole)
+{
+    // Check for duplicates
+    if ( await GuildVoiceRole.exists({ minimumLevel: InputLevel }) != null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you already have a Voice Level Role assigned to Voice Level **${InputLevel}**!` });
+        return;
+    }
+    if ( await GuildVoiceRole.exists({ roleId: InputRole.id }) != null )
+    {
+        await slashCommand.editReply({ content: `Sorry, but you already have <@&${InputRole.id}> as a Voice Level Role for this Server!` });
+        return;
+    }
+
+
+    // Add & save to database
+    await GuildVoiceRole.create({
+        guildId: slashCommand.guildId,
+        roleId: InputRole.id,
+        minimumLevel: InputLevel
+    })
+    .catch(async err => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.Warning} **Error:** Something went wrong while trying to save your new Voice Level Role to the database. Please wait a few minutes, then try again.` });
+        return;
+    })
+    .then(async newRoleEntry => {
+        await slashCommand.editReply({ content: `${CrimsonEmojis.GreenTick} Successfully added <@&${InputRole.id}> as the Voice Level Role for Level **${InputLevel}**!` });
     });
 
     return;

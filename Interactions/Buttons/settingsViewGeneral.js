@@ -1,11 +1,9 @@
 const { ButtonInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { CrimsonEmojis, CustomColors, DiscordClient } = require("../../constants.js");
-const { GuildConfig } = require("../../Mongoose/Models.js");
+const { GuildConfig, GuildTextRole, GuildVoiceRole } = require("../../Mongoose/Models.js");
 
-/** Used by User to view all Level Roles for Server */
-const ViewRolesButton = new ActionRowBuilder().addComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewRoles`).setLabel("View Level Roles")
-]);
+const ViewTextRoleButton = new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewTextRoles`).setLabel("View Text Level Roles");
+const ViewVoiceRoleButton = new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId(`settingsViewVoiceRoles`).setLabel("View Voice Level Roles");
 
 module.exports = {
     // Button's Name
@@ -28,6 +26,8 @@ module.exports = {
     async execute(buttonInteraction)
     {
         await buttonInteraction.deferUpdate();
+
+        let viewRolesRow = new ActionRowBuilder();
 
         // Fetch Data
         if ( await GuildConfig.exists({ guildId: buttonInteraction.guildId }) == null )
@@ -60,8 +60,14 @@ If this error keeps appearing: please remove me from this Server, then re-add me
             { name: `Demotion Message`, value: `${GuildSettings.rankdownMessage}` }
         );
 
+        // Add Button(s) for viewing Level Roles, if there is at least one set
+        if ( await GuildTextRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewTextRoleButton); }
+        if ( await GuildVoiceRole.exists({ guildId: slashCommand.guildId }) != null ) { viewRolesRow.addComponents(ViewVoiceRoleButton); }
+
         // ACK
-        await buttonInteraction.editReply({ embeds: [SettingsEmbed], components: [ViewRolesButton] });
+        if ( viewRolesRow.data.components.length > 0 ) { await buttonInteraction.editReply({ embeds: [SettingsEmbed], components: [viewRolesRow] }); }
+        else { await buttonInteraction.editReply({ embeds: [SettingsEmbed] }); }
+
         return;
     }
 }

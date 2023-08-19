@@ -1,5 +1,5 @@
 const { Guild } = require("discord.js");
-const { GuildConfig, GuildBlocklist, GuildXp, GuildRole } = require("../../Mongoose/Models");
+const { GuildConfig, GuildBlocklist, GuildXp, GuildTextRole, GuildVoiceRole } = require("../../Mongoose/Models");
 
 module.exports = {
     /**
@@ -12,13 +12,15 @@ module.exports = {
         let checkConfig = await GuildConfig.exists({ guildId: guild.id });
         let checkBlocklist = await GuildBlocklist.exists({ guildId: guild.id });
         let checkGuildXp = await GuildXp.exists({ guildId: guild.id });
-        let checkRoles = await GuildRole.exists({ guildId: guild.id });
+        let checkTextRoles = await GuildTextRole.exists({ guildId: guild.id });
+        let checkVoiceRoles = await GuildVoiceRole.exists({ guildId: guild.id });
 
         // Delete Entries 
         if ( checkConfig != null ) { await GuildConfig.deleteOne({ guildId: guild.id }); }
         if ( checkBlocklist != null ) { await GuildBlocklist.deleteMany({ guildId: guild.id }); }
         if ( checkGuildXp != null ) { await GuildXp.deleteMany({ guildId: guild.id }); }
-        if ( checkRoles != null ) { await GuildRole.deleteMany({ guildId: guild.id }); }
+        if ( checkTextRoles != null ) { await GuildTextRole.deleteMany({ guildId: guild.id }); }
+        if ( checkVoiceRoles != null ) { await GuildVoiceRole.deleteMany({ guildId: guild.id }); }
 
         return;
     }
