@@ -37,7 +37,9 @@ module.exports =
         /** Main Avatar/PFP for CrimsonXP */
         CrimsonAvatar: "https://i.imgur.com/JlAQDef.png",
         /** Main Invite Link to Support Server */
-        SupportServerInvite: "https://discord.gg/discord-developers" // Placeholder for now, will replace later.
+        SupportServerInvite: "https://discord.gg/discord-developers", // Placeholder for now, will replace later.
+        /** CrimsonXP Bot Invite Link */
+        BotInvite: "https://discord.com/api/oauth2/authorize?client_id=1122149577630433331&permissions=274878221312&scope=applications.commands%20bot"
     },
 
     /** Emojis used */

@@ -2,18 +2,13 @@ const { ChatInputCommandInteraction, ChatInputApplicationCommandData, Autocomple
 const { DiscordClient, CustomColors, CrimsonUris } = require("../../constants.js");
 const { version, dependencies } = require('../../package.json');
 
-// Bot Invite Link
-const CrimsonBotInvite = DiscordClient.generateInvite({
-    scopes: [ OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands ],
-    permissions: [ PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.SendMessagesInThreads, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.UseExternalEmojis ]
-});
 
 // Button Links
 const InfoButtonLinks = new ActionRowBuilder().addComponents([
     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("GitHub").setURL("https://github.com/TwilightZebby/CrimsonXPBot"),
     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Changelogs").setURL("https://github.com/TwilightZebby/CrimsonXPBot/releases"),
     //new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Support Server").setURL("#"), // Placeholder for now
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Invite Bot").setURL(CrimsonBotInvite) // Also a placeholder for now
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Invite Bot").setURL(CrimsonUris.BotInvite)
 ]);
 
 module.exports = {
